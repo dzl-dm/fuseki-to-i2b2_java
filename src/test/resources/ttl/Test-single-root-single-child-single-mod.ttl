@@ -1,0 +1,71 @@
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix DZL: <http://data.dzl.de/ont/dwh#> .
+@prefix DZIF: <http://amedzif01.scidom.de:88/webclient/> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix : <http://localhost/ont/dwh#> .
+@prefix example: <http://localhost/ont/example#> .
+@prefix dwh: <http://sekmi.de/histream/dwh#> .
+@prefix rdf:	<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#> .
+
+## Powerset:
+# ()
+# ('modifier',)
+# ('child',)
+# ('multicode',)
+# ('modifier', 'child')
+# ('modifier', 'multicode')
+# ('child', 'multicode')
+# ('modifier', 'child', 'multicode')
+
+[
+  DZL:topLevelNode :SimpleTree;
+]
+.
+
+## Shared modifier(s):
+:abstract_modifier a skos:Concept ;
+skos:prefLabel "Abstract Modifier"@en ;
+DZL:displayLabel "Abstract modifier"@en ;
+dc:description "This is a simple, single modifier on its own with no children or complicated metadata, tags or links"@en;
+skos:notation "example:AM" ;
+skos:altLabel "Single modifier" ;
+rdf:partOf :SinlgeNodeModifier;
+rdf:partOf :ComplexBranch1;
+rdf:partOf :CB2Child;
+rdf:partOf :ComplexBranch3;
+rdf:partOf :ComplexBranch4;
+.
+
+## START - Simple Tree
+## Modifier(s)
+
+## Concept(s)
+:SimpleTree a skos:Concept ;
+skos:prefLabel "Simple Tree"@en ;
+DZL:displayLabel "Simple tree"@en ;
+dc:description "This is a tree demonstrating simple attributes and structure"@en;
+skos:notation "example:ST" ;
+skos:altLabel "Uncomplicated tree" ;
+.
+
+:SinlgeNode a skos:Concept ;
+skos:prefLabel "Single Node"@en ;
+DZL:displayLabel "Single node"@en ;
+dc:description "This is a simple, single node on its own with no children or complicated metadata, tags or links. It does however have an english version for each attribute"@en;
+skos:notation "example:SN" ;
+skos:altLabel "Lonely node" ;
+skos:broader :SimpleTree;
+.
+
+:SinlgeNodeModifier a skos:Concept ;
+skos:prefLabel "Single Node Modifier"@en ;
+DZL:displayLabel "Single node modifier"@en ;
+dc:description "This is a single node on its own with only a modifier applied beyond standard attributes"@en;
+skos:notation "example:SN-M" ;
+skos:altLabel "Lonely node with modifier" ;
+skos:broader :SimpleTree;
+# rdf:partOf :abstract_modifier;
+.
+
+## END - Simple Tree
