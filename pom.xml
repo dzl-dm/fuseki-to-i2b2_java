@@ -17,8 +17,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -51,7 +51,11 @@
 			<!-- <version>3.7.0</version> -->
 			<version>3.8.0</version>
 		</dependency>
-
+		<dependency>
+			<groupId>net.sourceforge.argparse4j</groupId>
+			<artifactId>argparse4j</artifactId>
+			<version>0.9.0</version>
+		</dependency>
     </dependencies>
 
     <build>
@@ -100,37 +104,37 @@
         </pluginManagement>
 		<plugins>
             <!-- shade: This plugin actually bundles all the dependencies into the built .jar file, so it can run standalone -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.4.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <!-- Some dependencies are signed, so we need to exclude the signatures in our mega-jar -->
-                        <configuration>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-shade-plugin</artifactId>-->
+<!--                <version>3.4.1</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <phase>package</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>shade</goal>-->
+<!--                        </goals>-->
+<!--                         Some dependencies are signed, so we need to exclude the signatures in our mega-jar -->
+<!--                        <configuration>-->
+<!--                            <filters>-->
+<!--                                <filter>-->
+<!--                                    <artifact>*:*</artifact>-->
+<!--                                    <excludes>-->
+<!--                                        <exclude>META-INF/*.SF</exclude>-->
+<!--                                        <exclude>META-INF/*.DSA</exclude>-->
+<!--                                        <exclude>META-INF/*.RSA</exclude>-->
+<!--                                    </excludes>-->
+<!--                                </filter>-->
+<!--                            </filters>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
             <!-- jar: Here we set the mainClass for the jar to run when called -->
             <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-                <!-- <version>3.0.2</version> -->
+                <version>3.0.2</version>
 				<configuration>
 					<archive>
 						<manifest>
@@ -140,6 +144,47 @@
 					</archive>
 				</configuration>
 			</plugin>
+			<plugin>
+			    <artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+			    	<execution>
+			        	<phase>install</phase>
+				        <goals>
+			          		<goal>copy-dependencies</goal>
+			        	</goals>
+			        	<configuration>
+			      			<outputDirectory>${project.build.directory}/lib</outputDirectory>
+			            </configuration>
+			        </execution>
+			    </executions>
+			</plugin>
+<!--			<plugin>-->
+<!--			    <groupId>org.codehaus.mojo</groupId>-->
+<!--			    <artifactId>exec-maven-plugin</artifactId>-->
+<!--			    <version>1.6.0</version>-->
+<!--			    <version>3.1.0</version>-->
+<!--			    <configuration>-->
+<!--			        <executable>java</executable>-->
+<!--					<mainClass>de.dzl.dwh.metadata.SQLFileWriter</mainClass>-->
+<!--			        <arguments>-->
+<!--			            <argument>-jar /target/fuseki-to-i2b2-1.0-SNAPSHOT.jar</argument>-->
+<!--			            <argument>/target/fuseki-to-i2b2-1.0-SNAPSHOT.jar</argument>-->
+<!--			            <argument>de.dzl.dwh.metadata.SQLFileWriter</argument>-->
+<!--			            <argument>config/test.properties</argument>-->
+<!--			            <argument>true</argument>-->
+<!--			            <argument>Test-multi-notation</argument>-->
+<!--			        </arguments>-->
+<!--			    </configuration>-->
+<!--			    <executions>-->
+<!--			        <execution>-->
+<!--			            <id>loading-test</id>-->
+<!--			            <phase>integration-test</phase>-->
+<!--			            <goals>-->
+<!--			                <goal>java</goal>-->
+<!--			            </goals>-->
+<!--			        </execution>-->
+<!--			    </executions>-->
+<!--			</plugin>-->
         </plugins>
     </build>
 </project>

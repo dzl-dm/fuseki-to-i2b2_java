@@ -1,0 +1,49 @@
+@prefix :        <#> .
+@prefix fuseki:  <http://jena.apache.org/fuseki#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ja:      <http://jena.hpl.hp.com/2005/11/Assembler#> .
+
+[] rdf:type fuseki:Server ;
+fuseki:services (
+<#cometar_test>
+) .
+
+
+<#cometar_test> rdf:type fuseki:Service ;
+fuseki:name                        "cometar_test" ;
+fuseki:endpoint [
+# SPARQL query service
+fuseki:operation fuseki:query ;
+fuseki:name "sparql"
+] ;
+fuseki:endpoint [
+# SPARQL query service (alt name)
+fuseki:operation fuseki:query ;
+fuseki:name "query"
+] ;
+fuseki:endpoint [
+# SPARQL update service
+fuseki:operation fuseki:update ;
+fuseki:name "update"
+] ;
+fuseki:endpoint [
+# HTML file upload service
+fuseki:operation fuseki:update ;
+fuseki:name "update"
+] ;
+fuseki:endpoint [
+# SPARQL Graph Store Protocol (read)
+fuseki:operation fuseki:gsp_r ;
+fuseki:name "get"
+] ;
+fuseki:endpoint [
+# SPARQL Graph Store Protcol (read and write)
+fuseki:operation fuseki:gsp_rw ;
+fuseki:name "data"
+] ;
+fuseki:dataset                     <#emptyDatasetTest> ;
+.
+
+<#emptyDatasetTest> rdf:type ja:RDFDataset .

@@ -78,6 +78,9 @@ public abstract class SQLGenerator {
 	}
 	
     protected void generateSQLStatements() throws IOException { 
+    	generateSQLStatements(null);
+    }
+    protected void generateSQLStatements(String download_date) throws IOException { 
     	long time = System.currentTimeMillis();
     	try {
 	    	initializeWriters();
@@ -91,8 +94,9 @@ public abstract class SQLGenerator {
 				String label = getLabel(elementName);
 				String elementType = topElements.get(1).get(topElements.get(0).indexOf(elementName));
 		    	System.out.println("Generating statements for tree: "+label);
+		    	System.out.println("download_date (genSQL): "+download_date);
 				//if (label.equals("Specimen")) 
-					recursivelyRunThroughConceptsAndGenerateStatements(elementName, elementType, new ArrayList<String>(), false, null);
+					recursivelyRunThroughConceptsAndGenerateStatements(elementName, elementType, new ArrayList<String>(), false, null, download_date);
 		    }
     	} finally {
     		closeWriters();
@@ -131,10 +135,15 @@ public abstract class SQLGenerator {
 	private void recursivelyRunThroughConceptsAndGenerateStatements(String element, String type, ArrayList<String> ancestors, boolean isModifier, String appliedPath) throws IOException
 	{		
 		String current_timestamp = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0")).format(new Date());
+		recursivelyRunThroughConceptsAndGenerateStatements(element, type, ancestors, isModifier, appliedPath, current_timestamp);
+	}
+	private void recursivelyRunThroughConceptsAndGenerateStatements(String element, String type, ArrayList<String> ancestors, boolean isModifier, String appliedPath, String download_date) throws IOException
+	{		
+    	System.out.println("download_date (recursive): "+download_date);
 		String label = getLabel(element);	
 		String displayLabel = getDisplayLabel(element);
 		if (displayLabel == null) displayLabel = label;
-		String datatypexml = getDatatypeXml(element, current_timestamp);
+		String datatypexml = getDatatypeXml(element, download_date);
 		String description = getDescription(element);
 		boolean i2b2Hidden = getDisplay(element).equals("i2b2Hidden");
 		
@@ -169,13 +178,13 @@ public abstract class SQLGenerator {
 
 		counter+=1;	
 		//Write statements for concept. In case of not exactly one concept notation, String notation will be "NULL".
-		generateI2b2InsertStatement(c_hlevel, notation, element_path, displayLabel, description, visualAttribute, current_timestamp, isModifier, appliedPath, datatypexml);
+		generateI2b2InsertStatement(c_hlevel, notation, element_path, displayLabel, description, visualAttribute, download_date, isModifier, appliedPath, datatypexml);
 		if (isRootElement)
 			generateTableAccessInsertStatement(element_path, displayLabel, visualAttribute);		
 		if (notation != null)
 		{
-			if (isModifier) generateModifierDimensionInsertStatement(notation, element_path, label, current_timestamp);
-			else generateConceptDimensionInsertStatement(notation, element_path, label, current_timestamp);
+			if (isModifier) generateModifierDimensionInsertStatement(notation, element_path, label, download_date);
+			else generateConceptDimensionInsertStatement(notation, element_path, label, download_date);
 		}
 
 		//in case of multiple notations
@@ -189,7 +198,7 @@ public abstract class SQLGenerator {
 				visualAttribute = "MH";
 				element_path += "MULTI\\";
 				
-				generateI2b2InsertStatement(c_hlevel, "", element_path, "MULTI", description, visualAttribute, current_timestamp, isModifier, appliedPath, datatypexml);
+				generateI2b2InsertStatement(c_hlevel, "", element_path, "MULTI", description, visualAttribute, download_date, isModifier, appliedPath, datatypexml);
 			}		
 			//Write INSERT statements for all notations.
 			c_hlevel++;
@@ -200,9 +209,9 @@ public abstract class SQLGenerator {
 				notationPrefix = getNotationPrefix(notations.get(i));
 				notation = notationPrefix + notations.get(i).getString();
 				
-				generateI2b2InsertStatement(c_hlevel, notation, element_path_sub, displayLabel, description, visualAttribute, current_timestamp, isModifier, appliedPath, datatypexml);
-				if (isModifier) generateModifierDimensionInsertStatement(notation, element_path_sub, label, current_timestamp);
-				else generateConceptDimensionInsertStatement(notation, element_path_sub, label, current_timestamp);
+				generateI2b2InsertStatement(c_hlevel, notation, element_path_sub, displayLabel, description, visualAttribute, download_date, isModifier, appliedPath, datatypexml);
+				if (isModifier) generateModifierDimensionInsertStatement(notation, element_path_sub, label, download_date);
+				else generateConceptDimensionInsertStatement(notation, element_path_sub, label, download_date);
 			}
 		}
 			
@@ -224,7 +233,7 @@ public abstract class SQLGenerator {
 	}
 	
 	private void generateI2b2InsertStatement(int c_hlevel, String notation, String concept_long, 
-			String label, String description, String visualAttribute, String current_timestamp, 
+			String label, String description, String visualAttribute, String download_date, 
 			boolean isModifier, String appliedPath, String datatypexml) throws IOException
 	{
 		String statement = 
@@ -237,13 +246,13 @@ public abstract class SQLGenerator {
 					c_hlevel+",'"+concept_long+"','"+label+"','N','"+visualAttribute+"',"+
 					(notation != null ? "'"+notation+"'" : "NULL")+","+datatypexml+","+(isModifier?"'modifier_cd'":"'concept_cd'")+","+(isModifier?"'modifier_dimension'":"'concept_dimension'")+","+(isModifier?"'modifier_path'":"'concept_path'")+","+
 					"'T','LIKE','"+concept_long+"','"+description+"','"+(appliedPath != null? appliedPath : "@")+"',"+
-					"current_timestamp,'"+current_timestamp+"',current_timestamp,'"+sourcesystem+"'"+
+					"current_timestamp,'"+download_date+"',current_timestamp,'"+sourcesystem+"'"+
 				");\n";
 		writeMetaSql(statement);
 	}
 	
 	private void generateConceptDimensionInsertStatement(String notation, String concept_long,
-			String label, String current_timestamp) throws IOException
+			String label, String download_date) throws IOException
 	{
 		String statement = 
 			"INSERT INTO "+data_schema+"concept_dimension("+
@@ -251,14 +260,14 @@ public abstract class SQLGenerator {
 				"download_date,import_date,sourcesystem_cd"+
 			")VALUES("+
 				"'"+concept_long+"','"+notation+"','"+label+"',current_timestamp,"+
-				"'"+current_timestamp+"',current_timestamp,'"+sourcesystem+"'"+
+				"'"+download_date+"',current_timestamp,'"+sourcesystem+"'"+
 			");\n";
 		writeDataSql(statement);	
 	}
 	
 	private ArrayList<String> uniqueModifiers = new ArrayList<String>();
 	private void generateModifierDimensionInsertStatement(String notation, String concept_long,
-			String label, String current_timestamp) throws IOException
+			String label, String download_date) throws IOException
 	{
 		if (uniqueModifiers.indexOf(concept_long) > -1) return;
 		uniqueModifiers.add(concept_long);
@@ -268,7 +277,7 @@ public abstract class SQLGenerator {
 				"download_date,import_date,sourcesystem_cd"+
 			")VALUES("+
 				"'"+concept_long+"','"+notation+"','"+label+"',current_timestamp,"+
-				"'"+current_timestamp+"',current_timestamp,'"+sourcesystem+"'"+
+				"'"+download_date+"',current_timestamp,'"+sourcesystem+"'"+
 			");\n";
 		writeDataSql(statement);	
 	}
@@ -410,7 +419,7 @@ public abstract class SQLGenerator {
 		return cleanLabel(displayLabel);
 	}
 	
-	private String getDatatypeXml(String concept, String current_timestamp) throws NullPointerException
+	private String getDatatypeXml(String concept, String download_date) throws NullPointerException
 	{
     	String queryString = query_datatype.replace("<CONCEPT>", "<"+concept+">");
 		Query query = QueryFactory.create(queryString);
@@ -424,7 +433,7 @@ public abstract class SQLGenerator {
 		httpQuery.close();
 		String datatypexml = "NULL";
 		if (!datatype.equals("")){
-			datatypexml = "'<ValueMetadata><Version>3.02</Version><CreationDateTime>"+current_timestamp+"</CreationDateTime><DataType>";
+			datatypexml = "'<ValueMetadata><Version>3.02</Version><CreationDateTime>"+download_date+"</CreationDateTime><DataType>";
 			switch (datatype) {
 				case "integer":
 					datatypexml += "Integer";
