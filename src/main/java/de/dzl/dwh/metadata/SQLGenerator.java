@@ -223,11 +223,11 @@ public abstract class SQLGenerator {
 			{
 				@SuppressWarnings("unchecked")
 				ArrayList<String> ancestors_names_clone = (ArrayList<String>) ancestors.clone();
-				recursivelyRunThroughConceptsAndGenerateStatements(childName, childType, ancestors_names_clone, isModifier, appliedPath);				
+				recursivelyRunThroughConceptsAndGenerateStatements(childName, childType, ancestors_names_clone, isModifier, appliedPath, download_date);
 			}
 			else if (childType.equals("modifier"))
 			{
-				recursivelyRunThroughConceptsAndGenerateStatements(childName, childType, new ArrayList<String>(), true, element_path+"%");				
+				recursivelyRunThroughConceptsAndGenerateStatements(childName, childType, new ArrayList<String>(), true, element_path+"%", download_date);
 			}
 	    }   
 	}
