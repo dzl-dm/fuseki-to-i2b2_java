@@ -20,6 +20,9 @@ while getopts 'u' OPTION; do
 done
 
 # test_names=(C-10_1parent-2notations-2children-2notations)
+# test_names=(C-7_1parent-1notation-2children-2notations)
+# test_names=(P-1_multi-notation-modifier)
+# test_names=(P-2_multi-notation-child-and-modifier)
 # test_names=($(ls -1 src/test/resources/))
 ## Safest to use globing instead of ls
 shopt -s nullglob
@@ -32,7 +35,7 @@ echo >&2 "$(date +"$df") DEBUG: Test names: ${test_names[@]}"
 echo >&2 "$(date +"$df") INFO: Installing and testing metadata translation tool"
 
 # mvn integration-test
-mvn install
+mvn clean install
 
 ## Ensure output dir is created (defined in properties)
 mkdir -p /tmp/metadata/i2b2-sql/
@@ -51,8 +54,10 @@ for tname in "${test_names[@]}"; do
         cp /tmp/metadata/i2b2-sql/data.sql src/test/resources/${tname}/sql/data.sql
         cp /tmp/metadata/i2b2-sql/meta.sql src/test/resources/${tname}/sql/meta.sql
     else
+        echo >&2 "$(date +"$df") INFO: Comparing data sql files..."
         diff --color src/test/resources/${tname}/sql/data.sql /tmp/metadata/i2b2-sql/data.sql
         [[ $? == 0 ]] || FAIL_COUNT=$((FAIL_COUNT+1))
+        echo >&2 "$(date +"$df") INFO: Comparing meta sql files..."
         diff --color src/test/resources/${tname}/sql/meta.sql /tmp/metadata/i2b2-sql/meta.sql
         [[ $? == 0 ]] || FAIL_COUNT=$((FAIL_COUNT+1))
     fi

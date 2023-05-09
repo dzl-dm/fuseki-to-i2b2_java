@@ -26,12 +26,15 @@ I2B2METAPW=demouser
 I2B2DEMOPW=demouser
 
 # test_names=(C-10_1parent-2notations-2children-2notations)
+# test_names=(C-7_1parent-1notation-2children-2notations)
+# test_names=(P-1_multi-notation-modifier)
+# test_names=(P-2_multi-notation-child-and-modifier)
 # test_names=(A-1_0-toplevel-nodes)
-test_names=(A-2_1-toplevel-node)
+# test_names=(A-2_1-toplevel-node)
 ## Safest to use globing instead of ls
 shopt -s nullglob
 cd src/test/resources/
-# test_names=(*/)
+test_names=(*/)
 cd -
 shopt -u nullglob
 echo "$(date +"$df") DEBUG: Test names: ${test_names[@]}"
@@ -54,7 +57,7 @@ for tname in "${test_names[@]}"; do
         fi
     fi
 
-    ## Run SQL against i2b2 database (must be localhost postgres!) - use appropriate user for demo/meta data
+    ## Run SQL against i2b2 database (Fixed as localhost:5432 postgres!) - use appropriate user for demo/meta data
     echo "$(date +"$df") DEBUG: Loading meta data..."
     PGPASSWORD=$I2B2METAPW /usr/bin/psql -v ON_ERROR_STOP=1 -v statement_timeout=120000 -L "log/postgres.log" -q --host=localhost --username=i2b2metadata --dbname=i2b2 -f "src/test/resources/${tname}/sql/meta.sql"
 	if [ $? -ne 0 ]; then

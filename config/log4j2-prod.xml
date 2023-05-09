@@ -1,0 +1,23 @@
+<Configuration name="general" packages="">
+    <Appenders>
+        <Console name="CONSOLE" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%C{1}.%M:%L] %p %m%n"/>
+        </Console>
+	    <File name="fileAppender" fileName="log/metadata-translator.log" append="true">
+	        <PatternLayout>
+	            <Pattern>%d{yyyy-MM-dd HH:mm:ss} [%C{1}.%M:%L] %-5p %m%nw</Pattern>
+	        </PatternLayout>
+	    </File>
+    </Appenders>
+
+	<Loggers>
+	    <Root level="WARN" additivity="false">
+	        <AppenderRef ref="CONSOLE" level="WARN" />
+	     </Root>
+	    <Logger name="de.dzl.dwh.metadata" level="INFO"
+	        additivity="false">
+	        <AppenderRef ref="CONSOLE" level="INFO" />
+	        <Appender-ref ref="fileAppender" level="WARN" />
+	    </Logger>
+	</Loggers>
+</Configuration>

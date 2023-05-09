@@ -21,6 +21,10 @@ import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.modify.UsingList;
 import org.apache.jena.update.UpdateAction;
+import org.apache.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
@@ -29,6 +33,8 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 
 public class SQLFileWriter extends SQLGenerator {
+
+    private static final Logger logger = LoggerFactory.getLogger(SQLFileWriter.class);
 
 	private Writer writer_meta;
 	private Writer writer_data;
@@ -67,13 +73,32 @@ public class SQLFileWriter extends SQLGenerator {
             ns = parser.parseArgs(args);
         } catch (ArgumentParserException e) {
             parser.handleError(e);
-            System.out.printf("%s\n", "Bad use of arguments, use --help for more information");
+//            System.out.printf("%s\n", "Bad use of arguments, use --help for more information");
+            logger.error("Bad use of arguments, use --help for more information");
             System.exit(1);
         }
-
-//        System.out.printf("%s\n", ns);
-//        System.out.printf("%s\n", ns.getString("input")); // If nargs("?")
-//        System.out.printf("%s  %s\n", "input: ", ns.getList("input").get(0)); // If nargs("*")
+        if (ns.getString("debug").equals("true")) {
+        	// Attempt to override the log level to debug
+//            System.out.printf("DEBUGGING mode. High levels of logging!\n");
+//            System.out.printf("Effective Log level (root): " + org.apache.log4j.Logger.getRootLogger().getEffectiveLevel() + "\n");
+//            System.out.printf("Log level (root): " + org.apache.log4j.Logger.getRootLogger().getLevel() + "\n");
+//            System.out.printf("Effective Log level (): " + org.apache.log4j.Logger.getLogger(SQLFileWriter.class).getEffectiveLevel() + "\n");
+//            System.out.printf("Log level (): " + org.apache.log4j.Logger.getLogger(SQLFileWriter.class).getLevel() + "\n");
+//        	org.apache.log4j.Logger logger4j = org.apache.log4j.Logger.getLogger(SQLFileWriter.class);
+        	org.apache.log4j.Logger logger4j = org.apache.log4j.Logger.getRootLogger();
+        	logger4j.setLevel(org.apache.log4j.Level.toLevel("debug"));
+//        	Configurator.setAllLevels(Logger.ROOT_LOGGER_NAME, "DEBUG");
+//        	logger.ROOT_LOGGER_NAME;
+//            logger.debug("Debug logging successfully activated...");
+        }
+//        logger.debug("Arg namespace: {}", ns);
+//        logger.debug(ns.getString("input")); // If nargs("?")
+//        logger.debug("input: {}", ns.getList("input").get(0)); // If nargs("*")
+       logger.trace("Test trace message");
+       logger.debug("Test debug message");
+       logger.info("Test log message");
+       logger.warn("Test log message '{}'", "WARN");
+       logger.error("Test error message");
 
         // Continue...
 		SQLFileWriter sqlFileWriter = new SQLFileWriter();
@@ -100,13 +125,14 @@ public class SQLFileWriter extends SQLGenerator {
 			sqlFileWriter.mappings.put(mappingsArray[i], mappingsArray[i+1]);
 		}
 
-		System.out.println("ttl_file_directory: " + ttl_file_directory);			
-		System.out.println("ttl_rule_file: " + ttl_rule_file);			
+		logger.debug("ttl_file_directory: {}", ttl_file_directory);
+		logger.debug("ttl_rule_file: {}", ttl_rule_file);
 		if (use_embedded_server)
 		{
 			server = startEmbeddedServer(ttl_file_directory,ttl_rule_file);
 	    	URI uri = server.server.getURI();
 	    	sqlFileWriter.sparqlEndpoint = "http://"+uri.getHost()+":3330/ds/query";
+			logger.debug("sparqlEndpoint: http://{}:3330/ds/query", uri.getHost());
 		}
 		else
 		{

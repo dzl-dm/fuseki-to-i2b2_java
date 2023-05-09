@@ -19,7 +19,15 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class SQLGenerator {
+
+    // Logger logger = LoggerFactory.getLogger(SQLGenerator.class);
+	// private static final Logger logger = LoggerFactory.getLogger(SQLGenerator.class);
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+
 	String meta_schema;
 	String data_schema;
 	String sparqlEndpoint;
@@ -162,7 +170,8 @@ public abstract class SQLGenerator {
 		if (type.equals("collection")) visualAttributePartOne = "C";
 		else if (childNames.size() > 0) visualAttributePartOne = isModifier?"D":"F";
 		else if (notations.size() <= 1) visualAttributePartOne = isModifier?"R":"L";
-		else visualAttributePartOne = "M";
+		// else visualAttributePartOne = "M";
+		else visualAttributePartOne = isModifier?"R":"L";
 		visualAttribute = visualAttributePartOne+visualAttributePartTwo;
 		/*
 		 * Building two i2b2 paths, one with and one without prefixes of form:
@@ -178,9 +187,9 @@ public abstract class SQLGenerator {
 
 		counter+=1;	
 		//Write statements for concept. In case of not exactly one concept notation, String notation will be "NULL".
-		generateI2b2InsertStatement(c_hlevel, notation, element_path, displayLabel, description, visualAttribute, download_date, isModifier, appliedPath, datatypexml);
 		if (isRootElement)
 			generateTableAccessInsertStatement(element_path, displayLabel, visualAttribute);		
+		generateI2b2InsertStatement(c_hlevel, notation, element_path, displayLabel, description, visualAttribute, download_date, isModifier, appliedPath, datatypexml);
 		if (notation != null)
 		{
 			if (isModifier) generateModifierDimensionInsertStatement(notation, element_path, label, download_date);
@@ -191,18 +200,18 @@ public abstract class SQLGenerator {
 		if (notations.size() > 1)
 		{
 			//If the concept also has children, insert an additional i2b2 path layer.
-			if (childNames.size() > 0)
-			{
+			// if (childNames.size() > 0)
+			// {
 				c_hlevel++;
 				//H für HIDDEN
 				visualAttribute = "MH";
 				element_path += "MULTI\\";
 				
 				generateI2b2InsertStatement(c_hlevel, "", element_path, "MULTI", description, visualAttribute, download_date, isModifier, appliedPath, datatypexml);
-			}		
+			// }		
 			//Write INSERT statements for all notations.
 			c_hlevel++;
-			visualAttribute = "LH";
+			visualAttribute = isModifier?"RH":"LH";
 			for (int i = 0; i < notations.size(); i++)
 			{
 				String element_path_sub = element_path + i+"\\";
@@ -351,10 +360,12 @@ public abstract class SQLGenerator {
 		Query query = QueryFactory.create(queryString);
 		QueryEngineHTTP httpQuery = new QueryEngineHTTP(sparqlEndpoint, query);
 		ResultSet results = httpQuery.execSelect();
+		logger.debug("Element list from 'getChildren':");
 		while (results.hasNext()) {
 			QuerySolution solution = results.next();		
 			elements.add(solution.get("element").toString());
 			types.add(solution.get("type").toString());
+			logger.debug("Element: {}", solution.get("element").toString());
 		}
 		httpQuery.close();
 		ArrayList<ArrayList<String>> r = new ArrayList<ArrayList<String>>();
