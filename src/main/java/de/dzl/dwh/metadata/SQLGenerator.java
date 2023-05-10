@@ -34,6 +34,7 @@ public abstract class SQLGenerator {
 	String sourcesystem;
 	String ontology_tablename;
 	String i2b2_path_prefix;
+	Integer max_description_length;
 	Map<String, String> mappings;
 	String outputDir;
 
@@ -79,7 +80,7 @@ public abstract class SQLGenerator {
 	
 	private void writePreambles() throws IOException
 	{
-		writeMetaSql("DELETE FROM "+meta_schema+"table_access WHERE c_table_cd LIKE 'i2b2_%';\n");
+		writeMetaSql("DELETE FROM "+meta_schema+"table_access WHERE c_table_cd LIKE 'i2b2_"+sourcesystem+"_%';\n");
 		writeMetaSql("DELETE FROM "+meta_schema+ontology_tablename+" WHERE sourcesystem_cd='"+sourcesystem+"';\n");
 		writeDataSql("DELETE FROM "+data_schema+"concept_dimension WHERE sourcesystem_cd='"+sourcesystem+"';\n");
 		writeDataSql("DELETE FROM "+data_schema+"modifier_dimension WHERE sourcesystem_cd='"+sourcesystem+"';\n");
@@ -188,7 +189,7 @@ public abstract class SQLGenerator {
 		counter+=1;	
 		//Write statements for concept. In case of not exactly one concept notation, String notation will be "NULL".
 		if (isRootElement)
-			generateTableAccessInsertStatement(element_path, displayLabel, visualAttribute);		
+			generateTableAccessInsertStatement(element_path, displayLabel, visualAttribute, description);
 		generateI2b2InsertStatement(c_hlevel, notation, element_path, displayLabel, description, visualAttribute, download_date, isModifier, appliedPath, datatypexml);
 		if (notation != null)
 		{
@@ -245,6 +246,7 @@ public abstract class SQLGenerator {
 			String label, String description, String visualAttribute, String download_date, 
 			boolean isModifier, String appliedPath, String datatypexml) throws IOException
 	{
+		String trimmedDescription = (description.length() > max_description_length) ? description.substring(0, (max_description_length - 3)) + "..." : description;
 		String statement = 
 				"INSERT INTO "+meta_schema+ontology_tablename+"("+
 					"c_hlevel,c_fullname,c_name,c_synonym_cd,c_visualattributes,"+
@@ -254,7 +256,7 @@ public abstract class SQLGenerator {
 				"VALUES("+
 					c_hlevel+",'"+concept_long+"','"+label+"','N','"+visualAttribute+"',"+
 					(notation != null ? "'"+notation+"'" : "NULL")+","+datatypexml+","+(isModifier?"'modifier_cd'":"'concept_cd'")+","+(isModifier?"'modifier_dimension'":"'concept_dimension'")+","+(isModifier?"'modifier_path'":"'concept_path'")+","+
-					"'T','LIKE','"+concept_long+"','"+description+"','"+(appliedPath != null? appliedPath : "@")+"',"+
+					"'T','LIKE','"+concept_long+"','"+trimmedDescription+"','"+(appliedPath != null? appliedPath : "@")+"',"+
 					"current_timestamp,'"+download_date+"',current_timestamp,'"+sourcesystem+"'"+
 				");\n";
 		writeMetaSql(statement);
@@ -290,19 +292,23 @@ public abstract class SQLGenerator {
 			");\n";
 		writeDataSql(statement);	
 	}
-	
-	private void generateTableAccessInsertStatement(String concept_long, 
-			String label, String visualAttribute) throws IOException
-	{
+
+	private void generateTableAccessInsertStatement(
+				String concept_long, 
+				String label,
+				String visualAttribute,
+				String description) throws IOException {
+
+		String trimmedDescription = (description.length() > max_description_length) ? description.substring(0, (max_description_length - 3)) + "..." : description;
 		String statement = 
 				"INSERT INTO "+meta_schema+"table_access("+
 					"c_table_cd,c_table_name,c_protected_access,c_hlevel,c_fullname,"+
 					"c_name,c_synonym_cd,c_visualattributes,c_facttablecolumn,c_dimtablename,"+
 					"c_columnname,c_columndatatype,c_operator,c_dimcode,c_tooltip"+
 				")VALUES("+
-					"'i2b2_"+Integer.toHexString(concept_long.hashCode())+"','"+ontology_tablename+"','N',1,'"+concept_long+"',"+
+					"'i2b2_"+sourcesystem+"_"+Integer.toHexString(concept_long.hashCode())+"','"+ontology_tablename+"','N',1,'"+concept_long+"',"+
 					"'"+label+"','N','"+visualAttribute+"','concept_cd','concept_dimension',"+
-					"'concept_path','T','LIKE','"+concept_long+"','"+label+"'"+
+					"'concept_path','T','LIKE','"+concept_long+"','"+trimmedDescription+"'"+
 				");\n";
 		writeMetaSql(statement);
 	}

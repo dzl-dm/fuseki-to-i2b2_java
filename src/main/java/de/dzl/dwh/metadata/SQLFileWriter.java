@@ -68,7 +68,11 @@ public class SQLFileWriter extends SQLGenerator {
         parser.addArgument("--download_date", "--dldate")
 		        .nargs("?")
 		        .help("set a specific download_date to use in the generated SQL.");
-        Namespace ns = null;
+		parser.addArgument("--max_description_length", "--mdl")
+				.nargs("?")
+				.type(Integer.class)
+				.help("Set no of chars to trim description to.");
+		Namespace ns = null;
         try {
             ns = parser.parseArgs(args);
         } catch (ArgumentParserException e) {
@@ -94,11 +98,11 @@ public class SQLFileWriter extends SQLGenerator {
 //        logger.debug("Arg namespace: {}", ns);
 //        logger.debug(ns.getString("input")); // If nargs("?")
 //        logger.debug("input: {}", ns.getList("input").get(0)); // If nargs("*")
-       logger.trace("Test trace message");
-       logger.debug("Test debug message");
-       logger.info("Test log message");
-       logger.warn("Test log message '{}'", "WARN");
-       logger.error("Test error message");
+//        logger.trace("Test trace message");
+//        logger.debug("Test debug message");
+//        logger.info("Test log message");
+//        logger.warn("Test log message '{}'", "WARN");
+//        logger.error("Test error message");
 
         // Continue...
 		SQLFileWriter sqlFileWriter = new SQLFileWriter();
@@ -115,6 +119,7 @@ public class SQLFileWriter extends SQLGenerator {
 		sqlFileWriter.i2b2_path_prefix = prop.getProperty("i2b2.ontology.path_prefix");
 		sqlFileWriter.sourcesystem = prop.getProperty("i2b2.sourcesystem");
 		sqlFileWriter.outputDir = prop.getProperty("generator.output_dir");
+		sqlFileWriter.max_description_length = (ns.get("max_description_length") != null ? (Integer) ns.get("max_description_length") : Integer.parseInt(prop.getProperty("i2b2.max_description_length")));
 		String ttl_file_directory = ns.getString("input") != null ? ns.getString("input") : prop.getProperty("test.ttl_file_directory");
 		String ttl_rule_file = ns.getString("rules") != null ? ns.getString("rules") : prop.getProperty("test.ttl_rule_file");
 		String download_date = ns.getString("download_date") != null ? ns.getString("download_date") : prop.getProperty("test.download_date");
