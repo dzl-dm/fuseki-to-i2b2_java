@@ -23,11 +23,13 @@ done
 # test_names=(C-7_1parent-1notation-2children-2notations)
 # test_names=(P-1_multi-notation-modifier)
 # test_names=(P-2_multi-notation-child-and-modifier)
+# test_names=(P-3_multi-notation-child-and-modifier-with-child)
+test_names=(P-4_category-VA)
 # test_names=($(ls -1 src/test/resources/))
 ## Safest to use globing instead of ls
 shopt -s nullglob
 cd src/test/resources/
-test_names=(*/)
+# test_names=(*/)
 cd -
 shopt -u nullglob
 echo >&2 "$(date +"$df") DEBUG: Test names: ${test_names[@]}"
@@ -40,10 +42,11 @@ mvn clean install
 ## Ensure output dir is created (defined in properties)
 mkdir -p /tmp/metadata/i2b2-sql/
 
-FAIL_COUNT=0
+FAIL_TESTS=()
 for tname in "${test_names[@]}"; do
     # java -jar target/fuseki-to-i2b2-1.0-SNAPSHOT.jar -X config/test.properties true Test-multi-notation
     echo >&2 "$(date +"$df") INFO: Running test '${tname}'"
+    FAIL_FILES=()
     # java -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter config/test.properties true ${tname}
     # java -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p config/test.properties -e -i "src/test/resources/${tname}/ttl/"
     # java -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p config/test.properties -e -i "src/test/resources/${tname}/ttl/" --dldate "1970-01-01 00:00:00.1"
@@ -56,17 +59,21 @@ for tname in "${test_names[@]}"; do
     else
         echo >&2 "$(date +"$df") INFO: Comparing data sql files..."
         diff --color src/test/resources/${tname}/sql/data.sql /tmp/metadata/i2b2-sql/data.sql
-        [[ $? == 0 ]] || FAIL_COUNT=$((FAIL_COUNT+1))
+        [[ $? == 0 ]] || FAIL_FILES+=("data")
         echo >&2 "$(date +"$df") INFO: Comparing meta sql files..."
         diff --color src/test/resources/${tname}/sql/meta.sql /tmp/metadata/i2b2-sql/meta.sql
-        [[ $? == 0 ]] || FAIL_COUNT=$((FAIL_COUNT+1))
+        [[ $? == 0 ]] || FAIL_FILES+=("meta")
+        echo >&2 "$(date +"$df") DEBUG: Failed files (${#FAIL_FILES[@]}): ${FAIL_FILES[@]}"
+        if [[ ${#FAIL_FILES[@]} -gt 0 ]] ; then
+            FAILED_TEXT="${tname}[${FAIL_FILES[@]}]"
+            echo >&2 "$(date +"$df") DEBUG: Failed text: ${FAILED_TEXT}"
+            FAIL_TESTS+=("${FAILED_TEXT}")
+        fi
     fi
-    ## DEBUG
-    # sleep 30
 done
 
-## Diff with provided files
-    ## Diff each csv file under the test name's directory
-# diff src/test/resources/Test-multi-notation/sql/data.sql /tmp/cometar/i2b2-sql/data.sql
-# diff src/test/resources/Test-multi-notation/sql/meta.sql /tmp/cometar/i2b2-sql/meta.sql
-echo >&2 "$(date +"$df") INFO: All tests complete with '${FAIL_COUNT}' failures..."
+echo >&2 "$(date +"$df") INFO: All tests complete with '${#FAIL_TESTS[@]}' failures..."
+for tfail in "${FAIL_TESTS[@]}"; do
+    echo "${tfail}"
+done
+echo -e "*--------^--------*\n"

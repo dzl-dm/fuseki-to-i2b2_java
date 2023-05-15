@@ -25,16 +25,17 @@ done
 I2B2METAPW=demouser
 I2B2DEMOPW=demouser
 
-# test_names=(C-10_1parent-2notations-2children-2notations)
+# test_names=(C-9_1parent-2notations-1child-1notation)
 # test_names=(C-7_1parent-1notation-2children-2notations)
 # test_names=(P-1_multi-notation-modifier)
 # test_names=(P-2_multi-notation-child-and-modifier)
+# test_names=(P-3_multi-notation-child-and-modifier-with-child)
+test_names=(P-4_category-VA)
 # test_names=(A-1_0-toplevel-nodes)
-# test_names=(A-2_1-toplevel-node)
 ## Safest to use globing instead of ls
 shopt -s nullglob
 cd src/test/resources/
-test_names=(*/)
+# test_names=(*/)
 cd -
 shopt -u nullglob
 echo "$(date +"$df") DEBUG: Test names: ${test_names[@]}"
@@ -72,8 +73,6 @@ for tname in "${test_names[@]}"; do
         echo "$(date +"$df") ERROR: Cannot continue, please address issue with loading data, then try again."
         exit 1
 	fi
-    ## DEBUG
-    # sleep 30
 
     echo "$(date +"$df") DEBUG: Querying i2b2..."
     curl -X POST -d @src/test/resources/${tname}/xml/query.xml http://localhost/webclient/index.php > /tmp/metadata/i2b2-sql/response_raw.xml
@@ -87,6 +86,8 @@ for tname in "${test_names[@]}"; do
         diff src/test/resources/${tname}/xml/response.xml /tmp/metadata/i2b2-sql/response.xml
         [[ $? == 0 ]] || FAIL_COUNT=$((FAIL_COUNT+1))
     fi
+    ## DEBUG
+    # sleep 30
 
 done
 

@@ -21,8 +21,6 @@ import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.sparql.modify.UsingList;
 import org.apache.jena.update.UpdateAction;
-import org.apache.log4j.Level;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

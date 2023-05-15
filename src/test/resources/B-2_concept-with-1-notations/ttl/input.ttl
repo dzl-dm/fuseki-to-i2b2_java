@@ -2,5 +2,7 @@
 @prefix : <http://data.dzl.de/ont/dwh#> .
 
 :Root :topLevelNode :Concept .
-:Concept a skos:Concept ; skos:prefLabel "Concept"@en .
-:Concept skos:notation "notation" .
+:Concept a skos:Concept;
+    skos:prefLabel "Concept"@en;
+    skos:notation "notation";
+.

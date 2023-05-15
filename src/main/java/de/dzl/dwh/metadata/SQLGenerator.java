@@ -103,7 +103,8 @@ public abstract class SQLGenerator {
 				String label = getLabel(elementName);
 				String elementType = topElements.get(1).get(topElements.get(0).indexOf(elementName));
 		    	System.out.println("Generating statements for tree: "+label);
-		    	System.out.println("download_date (genSQL): "+download_date);
+				logger.debug("Generating statements for tree: {}", label);
+				logger.debug("download_date (genSQL): {}", download_date);
 				//if (label.equals("Specimen")) 
 					recursivelyRunThroughConceptsAndGenerateStatements(elementName, elementType, new ArrayList<String>(), false, null, download_date);
 		    }
@@ -148,7 +149,7 @@ public abstract class SQLGenerator {
 	}
 	private void recursivelyRunThroughConceptsAndGenerateStatements(String element, String type, ArrayList<String> ancestors, boolean isModifier, String appliedPath, String download_date) throws IOException
 	{		
-    	System.out.println("download_date (recursive): "+download_date);
+    	// System.out.println("download_date (recursive): "+download_date);
 		String label = getLabel(element);	
 		String displayLabel = getDisplayLabel(element);
 		if (displayLabel == null) displayLabel = label;
@@ -208,7 +209,7 @@ public abstract class SQLGenerator {
 				visualAttribute = "MH";
 				element_path += "MULTI\\";
 				
-				generateI2b2InsertStatement(c_hlevel, "", element_path, "MULTI", description, visualAttribute, download_date, isModifier, appliedPath, datatypexml);
+				generateI2b2InsertStatement(c_hlevel, null, element_path, "MULTI", description, visualAttribute, download_date, isModifier, appliedPath, datatypexml);
 			// }		
 			//Write INSERT statements for all notations.
 			c_hlevel++;

@@ -13,9 +13,3 @@
     skos:notation "child-notation1";
     skos:notation "child-notation2";
 .
-:Concept3 a skos:Concept;
-    skos:prefLabel "Child conceptb"@en;
-    skos:broader :Concept;
-    skos:notation "childb-notation1";
-    skos:notation "childb-notation2";
-.
