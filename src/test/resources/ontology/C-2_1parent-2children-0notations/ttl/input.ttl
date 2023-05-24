@@ -1,0 +1,17 @@
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix : <http://data.dzl.de/ont/dwh#> .
+
+:Root :topLevelNode :Concept .
+:Concept a skos:Concept;
+    skos:prefLabel "Concept"@en;
+.
+
+:Concept2 a skos:Concept;
+    skos:prefLabel "Child concept1"@en;
+    skos:broader :Concept;
+.
+
+:Concept3 a skos:Concept;
+    skos:prefLabel "Child concept2"@en;
+    skos:broader :Concept;
+.

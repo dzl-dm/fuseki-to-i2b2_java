@@ -1,0 +1,44 @@
+<response_header xmlns:ns5="http://www.i2b2.org/xsd/hive/msg/1.1/" xmlns:ns6="http://www.i2b2.org/xsd/cell/ont/1.1/" xmlns:ns8="http://www.i2b2.org/xsd/cell/crc/psm/analysisdefinition/1.1/" xmlns:ns7="http://www.i2b2.org/xsd/cell/crc/psm/querydefinition/1.1/" xmlns:ns9="http://www.i2b2.org/xsd/cell/pm/1.1/" xmlns:ns2="http://www.i2b2.org/xsd/cell/fr/1.0/" xmlns:ns4="http://www.i2b2.org/xsd/cell/crc/psm/1.1/" xmlns:ns3="http://www.i2b2.org/xsd/cell/crc/loader/1.1/">
+        <result_status>
+            <status type="DONE">Ontology processing completed</status>
+        </result_status>
+    </response_header>
+<message_body xmlns:ns5="http://www.i2b2.org/xsd/hive/msg/1.1/" xmlns:ns6="http://www.i2b2.org/xsd/cell/ont/1.1/" xmlns:ns8="http://www.i2b2.org/xsd/cell/crc/psm/analysisdefinition/1.1/" xmlns:ns7="http://www.i2b2.org/xsd/cell/crc/psm/querydefinition/1.1/" xmlns:ns9="http://www.i2b2.org/xsd/cell/pm/1.1/" xmlns:ns2="http://www.i2b2.org/xsd/cell/fr/1.0/" xmlns:ns4="http://www.i2b2.org/xsd/cell/crc/psm/1.1/" xmlns:ns3="http://www.i2b2.org/xsd/cell/crc/loader/1.1/">
+        <ns6:modifiers>
+            <modifier>
+                <level>1</level>
+                <applied_path>\i2b2\dzl:Concept\%</applied_path>
+                <key>\\i2b2_test2_80f5eadf\dzl:modifier1\</key>
+                <fullname>\dzl:modifier1\</fullname>
+                <name>Modifier1</name>
+                <visualattributes>RA </visualattributes>
+                <synonym_cd>N</synonym_cd>
+                <totalnum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                <basecode>long:MOD</basecode>
+                <facttablecolumn>modifier_cd</facttablecolumn>
+                <tablename>modifier_dimension</tablename>
+                <columnname>modifier_path</columnname>
+                <columndatatype>T</columndatatype>
+                <operator>LIKE</operator>
+                <dimcode>\dzl:modifier1\</dimcode>
+                <tooltip>Modifier1</tooltip>
+            </modifier>
+            <modifier>
+                <level>1</level>
+                <applied_path>\i2b2\dzl:Concept\%</applied_path>
+                <key>\\i2b2_test2_80f5eadf\dzl:modifier2\</key>
+                <fullname>\dzl:modifier2\</fullname>
+                <name>Modifier2</name>
+                <visualattributes>RA </visualattributes>
+                <synonym_cd>N</synonym_cd>
+                <totalnum xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                <facttablecolumn>modifier_cd</facttablecolumn>
+                <tablename>modifier_dimension</tablename>
+                <columnname>modifier_path</columnname>
+                <columndatatype>T</columndatatype>
+                <operator>LIKE</operator>
+                <dimcode>\dzl:modifier2\</dimcode>
+                <tooltip>Modifier2</tooltip>
+            </modifier>
+        </ns6:modifiers>
+    </message_body>

@@ -1,0 +1,22 @@
+@prefix rdf:	<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix : <http://data.dzl.de/ont/dwh#> .
+
+:Root :topLevelNode :Concept .
+:Concept a skos:Concept;
+    skos:prefLabel "Concept"@en;
+    skos:notation "notation";
+    rdf:hasPart :modifier1;
+    rdf:hasPart :modifier2;
+.
+
+:modifier1 a skos:Concept;
+  skos:prefLabel "Modifier1"@en;
+  skos:notation "MOD";
+.
+
+:modifier2 a skos:Concept;
+  skos:prefLabel "Modifier2"@en;
+  skos:notation "MOD_1";
+  skos:notation "MOD_2";
+.
