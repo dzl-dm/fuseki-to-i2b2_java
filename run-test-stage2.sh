@@ -18,7 +18,7 @@ function yes_or_no {
     done
 }
 
-while getopts 'ut:d' OPTION; do
+while getopts 'ut:d?' OPTION; do
     case "$OPTION" in
         u)
             echo "$(date +"$df") WARN: Running in UPDATE mode! Expected test results will be updated based on the output of these test runs"
@@ -33,7 +33,10 @@ while getopts 'ut:d' OPTION; do
             DEBUG_MODE=1
         ;;
         ?)
-            echo "script usage: $(basename \$0) [-u]" >&2
+            echo "script usage: $(basename $0) [-ut:d]" >&2
+            echo "$(basename $0) -u = update mode. Test result will replace expected result" >&2
+            echo "$(basename $0) -t test-name = individual test. Run the test provided" >&2
+            echo "$(basename $0) -d = debug mode. More detailed logs" >&2
             exit 0
         ;;
     esac
