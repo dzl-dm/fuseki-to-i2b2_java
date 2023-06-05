@@ -1,7 +1,7 @@
 #!/bin/bash
 ## Run through array of tests
 ## Load: SQL -> i2b2
-## Test: xml query/response of i2b2 ontology
+## Test: xml query/response of i2b2 metadata ontology
 
 ## Please ensure i2b2-core is running with on normal ports with db exposed.
 ## Please start with fresh database volume and "i2b2_data_level=demo_empty_project"
@@ -51,7 +51,7 @@ if [[ -z "${test_names}" ]] ; then
     # test_names=(P-3_multi-notation-child-and-modifier-with-child)
     ## Safest to use globing instead of ls
     shopt -s nullglob
-    cd src/test/resources/ontology/
+    cd src/test/resources/metadata/
     test_names=(*/)
     cd -
     shopt -u nullglob
@@ -70,9 +70,9 @@ for tname in "${test_names[@]}"; do
     FAIL_FILES=()
     ## TODO: Clean database (pushing SQL only clears from the same source_cd)
     
-    ## Load ontology to i2b2 database
+    ## Load metadata ontology to i2b2 database
     if [[ DEBUG_MODE -ne 0 ]]; then
-        echo "$(date +"$df") DEBUG: Loading ontology for '${tname}'..."
+        echo "$(date +"$df") DEBUG: Loading metadata ontology for '${tname}'..."
         ./load-ont.sh -t ${tname} -d
     else
         ./load-ont.sh -t ${tname}
@@ -82,7 +82,7 @@ for tname in "${test_names[@]}"; do
     ## Run multiple query/response tests?
     ## Glob for all xml queries
     shopt -s nullglob
-    cd src/test/resources/ontology/${tname}/xml/
+    cd src/test/resources/metadata/${tname}/xml/
     query_names=(query*.xml)
     cd -
     shopt -u nullglob
@@ -95,7 +95,7 @@ for tname in "${test_names[@]}"; do
             echo "$(date +"$df") DEBUG: Running query '${qname}', expecting response '${rname}'..."
         fi
 
-        curl -X POST -d @src/test/resources/ontology/${tname}/xml/${qname} http://localhost/webclient/index.php > /tmp/metadata/i2b2-ont/response_raw.xml
+        curl -X POST -d @src/test/resources/metadata/${tname}/xml/${qname} http://localhost/webclient/index.php > /tmp/metadata/i2b2-ont/response_raw.xml
         ## Extract "response_header" and "message_body" from response
         xmlstarlet sel -t -c "/ns5:response/response_header" -n -c "/ns5:response/message_body" -n /tmp/metadata/i2b2-ont/response_raw.xml > /tmp/metadata/i2b2-ont/response.xml
         ## WIP: ... and strip attributes (which we don't need and seem to change?!)
@@ -103,12 +103,12 @@ for tname in "${test_names[@]}"; do
 
         if [[ ${UPDATE_MODE} == 1 ]] ; then
             echo >&2 "$(date +"$df") INFO: Updating xml response file."
-            cp /tmp/metadata/i2b2-ont/response.xml src/test/resources/ontology/${tname}/xml/${rname}
+            cp /tmp/metadata/i2b2-ont/response.xml src/test/resources/metadata/${tname}/xml/${rname}
         else
             if [[ DEBUG_MODE -ne 0 ]]; then
                 echo "$(date +"$df") DEBUG: Comparing actual response with expected..."
             fi
-            diff src/test/resources/ontology/${tname}/xml/${rname} /tmp/metadata/i2b2-ont/response.xml
+            diff src/test/resources/metadata/${tname}/xml/${rname} /tmp/metadata/i2b2-ont/response.xml
             [[ $? == 0 ]] || FAIL_FILES+=(${qname})
         fi
     done

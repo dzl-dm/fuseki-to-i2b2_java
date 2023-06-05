@@ -106,7 +106,11 @@ public abstract class SQLGenerator {
 				logger.debug("Generating statements for tree: {}", label);
 				logger.debug("download_date (genSQL): {}", download_date);
 				//if (label.equals("Specimen")) 
+				if (download_date != null) {
 					recursivelyRunThroughConceptsAndGenerateStatements(elementName, elementType, new ArrayList<String>(), false, null, download_date);
+				} else {
+					recursivelyRunThroughConceptsAndGenerateStatements(elementName, elementType, new ArrayList<String>(), false, null);
+				}
 		    }
     	} finally {
     		closeWriters();
@@ -143,7 +147,7 @@ public abstract class SQLGenerator {
      * @throws IOException
      */
 	private void recursivelyRunThroughConceptsAndGenerateStatements(String element, String type, ArrayList<String> ancestors, boolean isModifier, String appliedPath) throws IOException
-	{		
+	{
 		String current_timestamp = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0")).format(new Date());
 		recursivelyRunThroughConceptsAndGenerateStatements(element, type, ancestors, isModifier, appliedPath, current_timestamp);
 	}

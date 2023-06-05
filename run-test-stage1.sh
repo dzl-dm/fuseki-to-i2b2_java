@@ -46,10 +46,10 @@ if [[ -z "${test_names}" ]] ; then
     fi
     ## Space separated list of tests to run
     # test_names=(P-3_multi-notation-child-and-modifier-with-child)
-    # test_names=($(ls -1 src/test/resources/ontology/))
+    # test_names=($(ls -1 src/test/resources/metadata/))
     ## Safest to use globing instead of ls
     shopt -s nullglob
-    cd src/test/resources/ontology/
+    cd src/test/resources/metadata/
     test_names=(*/)
     cd -
     shopt -u nullglob
@@ -64,7 +64,8 @@ echo >&2 "$(date +"$df") INFO: Installing and testing metadata translation tool"
 mvn clean install
 
 ## Ensure output dir is created (defined in properties)
-mkdir -p /tmp/metadata/i2b2-sql/
+program_output_dir=target/test-output/
+mkdir -p "${program_output_dir}"
 
 FAIL_TESTS=()
 for tname in "${test_names[@]}"; do
@@ -72,20 +73,20 @@ for tname in "${test_names[@]}"; do
     echo >&2 "$(date +"$df") INFO: Running test '${tname}'"
     FAIL_FILES=()
     # java -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter config/test.properties true ${tname}
-    # java -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p config/test.properties -e -i "src/test/resources/ontology/${tname}/ttl/"
-    # java -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p config/test.properties -e -i "src/test/resources/ontology/${tname}/ttl/" --dldate "1970-01-01 00:00:00.1"
-    java -Dlog4j.configurationFile=config/log4j2.xml -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p config/test.properties -e -i "src/test/resources/ontology/${tname}/ttl/"
-    # java -Dlog4j.configurationFile=config/log4j2-debug.xml -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p config/test.properties -e -i "src/test/resources/ontology/${tname}/ttl/"
+    # java -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p config/test.properties -e -i "src/test/resources/metadata/${tname}/ttl/"
+    # java -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p config/test.properties -e -i "src/test/resources/metadata/${tname}/ttl/" --dldate "1970-01-01 00:00:00.1"
+    java -Dlog4j.configurationFile=config/log4j2.xml -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p src/test/resources/config/test.properties -e -t -i "src/test/resources/metadata/${tname}/ttl/"
+    # java -Dlog4j.configurationFile=config/log4j2-debug.xml -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p config/test.properties -e -i "src/test/resources/metadata/${tname}/ttl/"
     if [[ ${UPDATE_MODE} == 1 ]] ; then
         echo >&2 "$(date +"$df") INFO: Updating sql files..."
-        cp /tmp/metadata/i2b2-sql/data.sql src/test/resources/ontology/${tname}/sql/data.sql
-        cp /tmp/metadata/i2b2-sql/meta.sql src/test/resources/ontology/${tname}/sql/meta.sql
+        cp ${program_output_dir}data.sql src/test/resources/metadata/${tname}/sql/data.sql
+        cp ${program_output_dir}meta.sql src/test/resources/metadata/${tname}/sql/meta.sql
     else
-        echo >&2 "$(date +"$df") INFO: Comparing data sql files..."
-        diff --color src/test/resources/ontology/${tname}/sql/data.sql /tmp/metadata/i2b2-sql/data.sql
+        echo >&2 "$(date +"$df") INFO: Comparing 'data.sql' files..."
+        diff --color src/test/resources/metadata/${tname}/sql/data.sql ${program_output_dir}data.sql
         [[ $? == 0 ]] || FAIL_FILES+=("data")
-        echo >&2 "$(date +"$df") INFO: Comparing meta sql files..."
-        diff --color src/test/resources/ontology/${tname}/sql/meta.sql /tmp/metadata/i2b2-sql/meta.sql
+        echo >&2 "$(date +"$df") INFO: Comparing 'meta.sql' files..."
+        diff --color src/test/resources/metadata/${tname}/sql/meta.sql ${program_output_dir}meta.sql
         [[ $? == 0 ]] || FAIL_FILES+=("meta")
         if [[ DEBUG_MODE -ne 0 ]]; then
             echo >&2 "$(date +"$df") DEBUG: Failed files (${#FAIL_FILES[@]}): ${FAIL_FILES[@]}"

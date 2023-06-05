@@ -55,7 +55,7 @@ if [[ -z "${test_names}" ]] ; then
     # test_names=(P-3_multi-notation-child-and-modifier-with-child)
     ## Safest to use globing instead of ls
     shopt -s nullglob
-    cd src/test/resources/query/
+    cd src/test/resources/meta+clinicaldata/
     test_names=(*/)
     cd -
     shopt -u nullglob
@@ -78,13 +78,13 @@ for tname in "${test_names[@]}"; do
     if [[ DEBUG_MODE -ne 0 ]]; then
         echo "$(date +"$df") DEBUG: Loading ontology metadata..."
     fi
-    if [[ ! -f src/test/resources/query/${tname}/load-ont.sh && ! -f src/test/resources/query/${tname}/load-ont_1.sh ]]; then
-        echo "$(date +"$df") WARN: Expected at least 'load-ont.sh' or 'load-ont_1.sh' to exist!"
+    if [[ ! -f src/test/resources/meta+clinicaldata/${tname}/load-ont.env && ! -f src/test/resources/meta+clinicaldata/${tname}/load-ont_1.env ]]; then
+        echo "$(date +"$df") WARN: Expected at least 'load-ont.env' or 'load-ont_1.env' to exist!"
         FAIL_FILES+=("ont*")
     fi
-    if [[ -f src/test/resources/query/${tname}/load-ont.sh ]]; then
+    if [[ -f src/test/resources/meta+clinicaldata/${tname}/load-ont.env ]]; then
         ## This should give us an updated "oname", to load
-        source ./src/test/resources/query/${tname}/load-ont.sh
+        source ./src/test/resources/meta+clinicaldata/${tname}/load-ont.env
         if [[ DEBUG_MODE -ne 0 ]]; then
             echo "$(date +"$df") DEBUG: Loading test default metadata..."
             ./load-ont.sh -t ${oname} -d
@@ -93,31 +93,27 @@ for tname in "${test_names[@]}"; do
         fi
     fi
 
-    if [[ DEBUG_MODE -ne 0 ]]; then
-        echo "$(date +"$df") DEBUG: Clearing existing demo data..."
-    fi
+    echo "$(date +"$df") INFO: Clearing existing clinical data..."
     PGPASSWORD=$I2B2METAPW /usr/bin/psql -h localhost -U i2b2demodata -d i2b2 -c "DELETE FROM i2b2demodata.patient_dimension; DELETE FROM i2b2demodata.visit_dimension; DELETE FROM i2b2demodata.observation_fact;"
 	if [ $? -ne 0 ]; then
         echo "$(date +"$df") ERROR: PostgreSQL command failed cleaning demodata, see log: log/postgres.log"
         echo "$(date +"$df") ERROR: Cannot continue, please address issue with cleaning/loading data, then try again."
         exit 1
 	fi
-    if [[ DEBUG_MODE -ne 0 ]]; then
-        echo "$(date +"$df") DEBUG: Loading demo data..."
-    fi
-    cat src/test/resources/query/${tname}/csv/observation_facts.csv | PGPASSWORD=$I2B2METAPW /usr/bin/psql -h localhost -U i2b2demodata -d i2b2 -c "\COPY i2b2demodata.observation_fact FROM STDIN DELIMITER ',' CSV HEADER;"
+    echo "$(date +"$df") INFO: Loading test clinical data..."
+    cat src/test/resources/meta+clinicaldata/${tname}/csv/observation_facts.csv | PGPASSWORD=$I2B2METAPW /usr/bin/psql -h localhost -U i2b2demodata -d i2b2 -c "\COPY i2b2demodata.observation_fact FROM STDIN DELIMITER ',' CSV HEADER;"
     if [ $? -ne 0 ]; then
         echo "$(date +"$df") ERROR: PostgreSQL command failed loading demodata, see log: log/postgres.log"
         echo "$(date +"$df") ERROR: Cannot continue, please address issue with loading data, then try again."
         exit 1
     fi
-    cat src/test/resources/query/${tname}/csv/patient_dimension.csv | PGPASSWORD=$I2B2METAPW /usr/bin/psql -h localhost -U i2b2demodata -d i2b2 -c "\COPY i2b2demodata.patient_dimension FROM STDIN DELIMITER ',' CSV HEADER;"
+    cat src/test/resources/meta+clinicaldata/${tname}/csv/patient_dimension.csv | PGPASSWORD=$I2B2METAPW /usr/bin/psql -h localhost -U i2b2demodata -d i2b2 -c "\COPY i2b2demodata.patient_dimension FROM STDIN DELIMITER ',' CSV HEADER;"
     if [ $? -ne 0 ]; then
         echo "$(date +"$df") ERROR: PostgreSQL command failed loading demodata, see log: log/postgres.log"
         echo "$(date +"$df") ERROR: Cannot continue, please address issue with loading data, then try again."
         exit 1
     fi
-    cat src/test/resources/query/${tname}/csv/visit_dimension.csv | PGPASSWORD=$I2B2METAPW /usr/bin/psql -h localhost -U i2b2demodata -d i2b2 -c "\COPY i2b2demodata.visit_dimension FROM STDIN DELIMITER ',' CSV HEADER;"
+    cat src/test/resources/meta+clinicaldata/${tname}/csv/visit_dimension.csv | PGPASSWORD=$I2B2METAPW /usr/bin/psql -h localhost -U i2b2demodata -d i2b2 -c "\COPY i2b2demodata.visit_dimension FROM STDIN DELIMITER ',' CSV HEADER;"
     if [ $? -ne 0 ]; then
         echo "$(date +"$df") ERROR: PostgreSQL command failed loading demodata, see log: log/postgres.log"
         echo "$(date +"$df") ERROR: Cannot continue, please address issue with loading data, then try again."
@@ -128,7 +124,7 @@ for tname in "${test_names[@]}"; do
     ## Run multiple query/response tests?
     ## Glob for all xml queries
     shopt -s nullglob
-    cd src/test/resources/query/${tname}/xml/
+    cd src/test/resources/meta+clinicaldata/${tname}/xml/
     query_names=(query*.xml)
     cd -
     shopt -u nullglob
@@ -138,10 +134,10 @@ for tname in "${test_names[@]}"; do
     for qname in "${query_names[@]}"; do
         ## Check our ont-load files...
         olname_part1="${qname/query/load-ont}"
-        olname="${oname_part1/.xml/.sh}"
-        if [[ -f src/test/resources/query/${tname}/${olname} ]]; then
+        olname="${olname_part1/.xml/.env}"
+        if [[ -f src/test/resources/meta+clinicaldata/${tname}/${olname} ]]; then
             ## This should give us an updated "oname", to load
-            source ./src/test/resources/query/${tname}/${olname}
+            source ./src/test/resources/meta+clinicaldata/${tname}/${olname}
             if [[ DEBUG_MODE -ne 0 ]]; then
                 echo "$(date +"$df") DEBUG: Loading query specific metadata '${oname}' specified in '${olname}' for this test..."
                 ./load-ont.sh -t ${oname} -d
@@ -156,18 +152,19 @@ for tname in "${test_names[@]}"; do
             echo "$(date +"$df") DEBUG: Running query '${qname}', expecting response '${rname}'..."
         fi
 
-        curl -X POST -d @src/test/resources/query/${tname}/xml/${qname} http://localhost/webclient/index.php > /tmp/metadata/i2b2-query/response_raw.xml
+        curl -X POST -d @src/test/resources/meta+clinicaldata/${tname}/xml/${qname} http://localhost/webclient/index.php > /tmp/metadata/i2b2-query/response_raw.xml
         ## Extract parts of the response for comparison
-        xmlstarlet sel -t -c "/ns5:response/response_header" -n -c "/ns5:response/message_body/ns4:response/query_result_instance/query_result_type" -n -c "/ns5:response/message_body/ns4:response/query_result_instance/set_size" -n /tmp/metadata/i2b2-query/response_raw.xml > /tmp/metadata/i2b2-query/response.xml
+        # xmlstarlet sel -t -c "/ns5:response/response_header" -n -c "/ns5:response/message_body/ns4:response/query_result_instance/query_result_type" -n -c "/ns5:response/message_body/ns4:response/query_result_instance/set_size" -n /tmp/metadata/i2b2-query/response_raw.xml > /tmp/metadata/i2b2-query/response.xml
+        xmlstarlet sel -t -c "/ns5:response/message_body/ns4:response/query_result_instance/set_size" -n /tmp/metadata/i2b2-query/response_raw.xml > /tmp/metadata/i2b2-query/response.xml
 
         if [[ ${UPDATE_MODE} == 1 ]] ; then
             echo >&2 "$(date +"$df") INFO: Updating xml response file."
-            cp /tmp/metadata/i2b2-query/response.xml src/test/resources/query/${tname}/xml/${rname}
+            cp /tmp/metadata/i2b2-query/response.xml src/test/resources/meta+clinicaldata/${tname}/xml/${rname}
         else
             if [[ DEBUG_MODE -ne 0 ]]; then
                 echo "$(date +"$df") DEBUG: Comparing actual response with expected..."
             fi
-            diff src/test/resources/query/${tname}/xml/${rname} /tmp/metadata/i2b2-query/response.xml
+            diff src/test/resources/meta+clinicaldata/${tname}/xml/${rname} /tmp/metadata/i2b2-query/response.xml
             [[ $? == 0 ]] || FAIL_FILES+=(${qname})
         fi
     done

@@ -63,46 +63,19 @@ public class SQLFileWriter extends SQLGenerator {
         parser.addArgument("-i", "--input")
 		        .nargs("?")
 		        .help("Directory containing input ttl files.");
+		parser.addArgument("-s", "--sparql")
+		        .nargs("?")
+		        .help("SPARQL endpoint to fetch RDF data from.");
         parser.addArgument("--download_date", "--dldate")
 		        .nargs("?")
-		        .help("set a specific download_date to use in the generated SQL.");
+		        .help("Set a specific download_date to use in the generated SQL.");
 		parser.addArgument("--max_description_length", "--mdl")
 				.nargs("?")
 				.type(Integer.class)
 				.help("Set no of chars to trim description to.");
 		Namespace ns = null;
-        try {
-            ns = parser.parseArgs(args);
-        } catch (ArgumentParserException e) {
-            parser.handleError(e);
-//            System.out.printf("%s\n", "Bad use of arguments, use --help for more information");
-            logger.error("Bad use of arguments, use --help for more information");
-            System.exit(1);
-        }
-        if (ns.getString("debug").equals("true")) {
-        	// Attempt to override the log level to debug
-//            System.out.printf("DEBUGGING mode. High levels of logging!\n");
-//            System.out.printf("Effective Log level (root): " + org.apache.log4j.Logger.getRootLogger().getEffectiveLevel() + "\n");
-//            System.out.printf("Log level (root): " + org.apache.log4j.Logger.getRootLogger().getLevel() + "\n");
-//            System.out.printf("Effective Log level (): " + org.apache.log4j.Logger.getLogger(SQLFileWriter.class).getEffectiveLevel() + "\n");
-//            System.out.printf("Log level (): " + org.apache.log4j.Logger.getLogger(SQLFileWriter.class).getLevel() + "\n");
-//        	org.apache.log4j.Logger logger4j = org.apache.log4j.Logger.getLogger(SQLFileWriter.class);
-        	org.apache.log4j.Logger logger4j = org.apache.log4j.Logger.getRootLogger();
-        	logger4j.setLevel(org.apache.log4j.Level.toLevel("debug"));
-//        	Configurator.setAllLevels(Logger.ROOT_LOGGER_NAME, "DEBUG");
-//        	logger.ROOT_LOGGER_NAME;
-//            logger.debug("Debug logging successfully activated...");
-        }
-//        logger.debug("Arg namespace: {}", ns);
-//        logger.debug(ns.getString("input")); // If nargs("?")
-//        logger.debug("input: {}", ns.getList("input").get(0)); // If nargs("*")
-//        logger.trace("Test trace message");
-//        logger.debug("Test debug message");
-//        logger.info("Test log message");
-//        logger.warn("Test log message '{}'", "WARN");
-//        logger.error("Test error message");
+		ns = parser.parseArgsOrFail(args);
 
-        // Continue...
 		SQLFileWriter sqlFileWriter = new SQLFileWriter();
 		FusekiServer server = null;
 
@@ -110,7 +83,8 @@ public class SQLFileWriter extends SQLGenerator {
 		String properties_path = "";
 		properties_path = ns.getString("properties") != null ? ns.getString("properties") : "properties.properties";
 		prop.load(new FileInputStream(properties_path));
-		boolean use_embedded_server = ns.getString("properties").equals("true") ? true : prop.getProperty("test.use_embedded_server").equals("true");
+		boolean use_embedded_server = ns.getString("embedded").equals("true") ? true : prop.getProperty("generator.use_embedded_server").equals("true");
+		boolean test_mode = ns.getString("test").equals("true") ? true : false;
 		sqlFileWriter.meta_schema = prop.getProperty("i2b2.meta_schema");
 		sqlFileWriter.data_schema = prop.getProperty("i2b2.data_schema");
 		sqlFileWriter.ontology_tablename = prop.getProperty("i2b2.ontology.tablename");
@@ -118,9 +92,13 @@ public class SQLFileWriter extends SQLGenerator {
 		sqlFileWriter.sourcesystem = prop.getProperty("i2b2.sourcesystem");
 		sqlFileWriter.outputDir = prop.getProperty("generator.output_dir");
 		sqlFileWriter.max_description_length = (ns.get("max_description_length") != null ? (Integer) ns.get("max_description_length") : Integer.parseInt(prop.getProperty("i2b2.max_description_length")));
-		String ttl_file_directory = ns.getString("input") != null ? ns.getString("input") : prop.getProperty("test.ttl_file_directory");
-		String ttl_rule_file = ns.getString("rules") != null ? ns.getString("rules") : prop.getProperty("test.ttl_rule_file");
-		String download_date = ns.getString("download_date") != null ? ns.getString("download_date") : prop.getProperty("test.download_date");
+		sqlFileWriter.sparqlEndpoint = ns.getString("sparql") != null ? ns.getString("sparql") : prop.getProperty("source.remote.sparql_endpoint");
+		String ttl_file_directory = ns.getString("input") != null ? ns.getString("input") : prop.getProperty("source.local.ttl_file_directory");
+		String ttl_rule_file = ns.getString("rules") != null ? ns.getString("rules") : prop.getProperty("source.local.ttl_rule_file");
+		String download_date = ns.getString("download_date") != null ? ns.getString("download_date") : null;
+		if (test_mode && download_date == null) {
+			download_date = prop.getProperty("testing.constant_download_date") != null && prop.getProperty("testing.constant_download_date") != "" ? prop.getProperty("testing.constant_download_date") : null;
+		}
 		String[] mappingsArray = prop.getProperty("generator.mappings").split(";");
 		sqlFileWriter.mappings = new HashMap<String, String>();
 		for (int i = 0; i < mappingsArray.length; i+=2)
@@ -128,28 +106,22 @@ public class SQLFileWriter extends SQLGenerator {
 			sqlFileWriter.mappings.put(mappingsArray[i], mappingsArray[i+1]);
 		}
 
+		logger.debug("sparqlEndpoint (after read args and config): ", sqlFileWriter.sparqlEndpoint);
 		logger.debug("ttl_file_directory: {}", ttl_file_directory);
 		logger.debug("ttl_rule_file: {}", ttl_rule_file);
-		if (use_embedded_server)
-		{
+		if (use_embedded_server) {
 			server = startEmbeddedServer(ttl_file_directory,ttl_rule_file);
 	    	URI uri = server.server.getURI();
 	    	sqlFileWriter.sparqlEndpoint = "http://"+uri.getHost()+":3330/ds/query";
 			logger.debug("sparqlEndpoint: http://{}:3330/ds/query", uri.getHost());
-		}
-		else
-		{
-			
-			if (!prop.containsKey("generator.sparql_endpoint"))
-			{
+		} else {
+			if (sqlFileWriter.sparqlEndpoint == null || sqlFileWriter.sparqlEndpoint == "") {
 				throw new IllegalArgumentException("Missing SPARQL endpoint property.");
 			}
-			sqlFileWriter.sparqlEndpoint = prop.getProperty("generator.sparql_endpoint");
 		}
 
 		try {
 			if (server != null) server.start();
-	    	System.out.println("download_date (main): "+download_date);
 			sqlFileWriter.generateSQLStatements(download_date);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -199,6 +171,9 @@ public class SQLFileWriter extends SQLGenerator {
 
 	@Override
 	protected void initializeWriters() throws UnsupportedEncodingException, FileNotFoundException {
+		// Ensure the output dir exists
+		File file = new File(outputDir);
+		file.mkdirs();
 		writer_meta = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputDir+"meta.sql"), "utf-8"));
 		writer_data = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputDir+"data.sql"), "utf-8"));
 	}
