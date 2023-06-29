@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  i2b2-metadata-translator:
+    container_name:
+      i2b2.metadata
+    image: ${IMAGE_NAMESPACE}/fuseki-to-i2b2_java/i2b2-metadata-translator:${META_VERSION:-latest}
+    # build:
+    #   context: ..
+    #   dockerfile: docker/Dockerfile
+    ports:
+      - 1042:1042
+    volumes:
+      - ../config/insertrules.ttl:/app/config/insertrules.ttl:ro
+      - ../config/log4j2-prod.xml:/app/config/log4j2.xml:ro
+      - ../config/test.properties:/app/config/properties.properties:ro
+    env_file:
+      - .env
+      - ./secrets/i2b2-secrets
