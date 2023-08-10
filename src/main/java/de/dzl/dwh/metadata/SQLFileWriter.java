@@ -106,7 +106,7 @@ public class SQLFileWriter extends SQLGenerator {
 			sqlFileWriter.mappings.put(mappingsArray[i], mappingsArray[i+1]);
 		}
 
-		logger.debug("sparqlEndpoint (after read args and config): ", sqlFileWriter.sparqlEndpoint);
+		logger.debug("sparqlEndpoint (after read args and config): {}", sqlFileWriter.sparqlEndpoint);
 		logger.debug("ttl_file_directory: {}", ttl_file_directory);
 		logger.debug("ttl_rule_file: {}", ttl_rule_file);
 		if (use_embedded_server) {
