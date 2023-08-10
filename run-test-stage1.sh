@@ -75,7 +75,7 @@ for tname in "${test_names[@]}"; do
     # java -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter config/test.properties true ${tname}
     # java -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p config/test.properties -e -i "src/test/resources/metadata/${tname}/ttl/"
     # java -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p config/test.properties -e -i "src/test/resources/metadata/${tname}/ttl/" --dldate "1970-01-01 00:00:00.1"
-    java -Dlog4j.configurationFile=config/log4j2.xml -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p src/test/resources/config/test.properties -e -t -i "src/test/resources/metadata/${tname}/ttl/"
+    java -Dlog4j.configurationFile=src/test/resources/config/log4j2.xml -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p src/test/resources/config/test.properties -e -t -i "src/test/resources/metadata/${tname}/ttl/"
     # java -Dlog4j.configurationFile=config/log4j2-debug.xml -cp target/fuseki-to-i2b2-1.0-SNAPSHOT.jar:target/lib/\* de.dzl.dwh.metadata.SQLFileWriter -p config/test.properties -e -i "src/test/resources/metadata/${tname}/ttl/"
     if [[ ${UPDATE_MODE} == 1 ]] ; then
         echo >&2 "$(date +"$df") INFO: Updating sql files..."
