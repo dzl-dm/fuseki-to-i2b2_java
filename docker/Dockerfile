@@ -7,8 +7,6 @@
 FROM maven:3.9-eclipse-temurin-19-alpine AS build
 # FROM maven:3.9-eclipse-temurin-11 AS build
 
-# FROM maven:3.9-eclipse-temurin-19-alpine
-# FROM maven:3.9-eclipse-temurin-11
 WORKDIR /app
 COPY pom.xml ./
 ## Fetch dependencies before adding source, docker will then reuse the cache for them
@@ -37,4 +35,5 @@ COPY docker/patient_count.sql /app/patient_count.sql
 COPY docker/coordinate-metadata-update.sh /app/coordinate-metadata-update.sh
 
 ## Minimal listener to run the script
-CMD while true ; do nc -l -p 1042 -e /bin/sh -c 'echo -e "HTTP/1.1 200 OK\n\n$(/app/coordinate-metadata-update.sh)"'; done
+CMD echo -e "Listening on port 1042\n"; while true ; do nc -l -p 1042 -e /bin/sh -c 'echo -e "HTTP/1.0 200 OK\n\n" && /bin/sh /app/coordinate-metadata-update.sh'; done
+# CMD while true ; do nc -l -p 1042 -e /bin/sh -c '/bin/sh /app/coordinate-metadata-update.sh && cat /app/response.txt'; done

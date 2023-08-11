@@ -12,7 +12,7 @@ echo "$(date +"$df") INFO: Received endpoint GET request, processing metadata" |
 [[ -z i2b2_meta_password ]] && echo "$(date +"$df") WARN: i2b2_meta_password is not set!" | tee /proc/1/fd/1
 
 echo "$(date +"$df") Starting translation process. This can take some time depending on the size of your RDF metadata..."
-java -Dlog4j.configurationFile=config/log4j2.xml -cp /usr/local/share/java/\* de.dzl.dwh.metadata.SQLFileWriter -p config/properties.properties
+java -Dlog4j.configurationFile=config/log4j2.xml -cp /usr/local/share/java/\* de.dzl.dwh.metadata.SQLFileWriter -p config/properties.properties >> /proc/1/fd/1
 # translate_return=$?
 # [ "$translate_return" = 0 ] || ( echo "$(date +"$df") ERROR: The translation program returned a non-zero exit code (${translate_return}). Aborting" | tee /proc/1/fd/1 && exit 1 )
 if [ $? -ne 0 ]; then
@@ -20,7 +20,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "$(date +"$df") Starting upload process. This replaces the metadata on the server"
+echo "$(date +"$df") Starting upload process. This replaces the metadata on the server" | tee /proc/1/fd/1
 PGPASSWORD=${DS_CRC_PASS} psql -v ON_ERROR_STOP=1 -v statement_timeout=120000 -L "log/postgres.log" -q --host=${DS_CRC_IP} --port=${DS_CRC_PORT} --username=${DS_CRC_USER} --dbname=${I2B2DBNAME} -f "output/data.sql"
 if [ $? -ne 0 ]; then
     echo "$(date +"$df") ERROR: PostgreSQL command failed loading data schema data, see docker log and/or server log: log/postgres.log" | tee /proc/1/fd/1
@@ -34,7 +34,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "$(date +"$df") Updating the patient counts in i2b2."
+echo "$(date +"$df") Updating the patient counts in i2b2." | tee /proc/1/fd/1
 ##TODO: Check the i2b2 built in patient count frunction/trigger - new in i2b2
 PGPASSWORD=${DS_PATCOUNT_PASS} psql -v ON_ERROR_STOP=1 -v statement_timeout=120000 -L "log/postgres.log" -q --host=${DS_ONT_IP} --port=${DS_ONT_PORT} --username=${DS_PATCOUNT_USER} --dbname=${I2B2DBNAME} -f "patient_count.sql"
 if [ $? -ne 0 ]; then
