@@ -6,17 +6,20 @@
 df="[%Y-%m-%d %H:%M:%S]"
 
 echo "$(date +"$df") INFO: Received endpoint GET request, processing metadata" | tee /proc/1/fd/1
-[[ -z i2b2_database_host ]] && echo "$(date +"$df") WARN: i2b2_database_host is not set!" | tee /proc/1/fd/1
-[[ -z i2b2_database_port ]] && echo "$(date +"$df") WARN: i2b2_database_port is not set!" | tee /proc/1/fd/1
-[[ -z i2b2_data_password ]] && echo "$(date +"$df") WARN: i2b2_data_password is not set!" | tee /proc/1/fd/1
-[[ -z i2b2_meta_password ]] && echo "$(date +"$df") WARN: i2b2_meta_password is not set!" | tee /proc/1/fd/1
+[[ -z DS_CRC_IP ]] && echo "$(date +"$df") WARN: DS_CRC_IP is not set!" | tee /proc/1/fd/1
+[[ -z DS_ONT_IP ]] && echo "$(date +"$df") WARN: DS_ONT_IP is not set!" | tee /proc/1/fd/1
+[[ -z DS_CRC_PORT ]] && echo "$(date +"$df") WARN: DS_CRC_PORT is not set!" | tee /proc/1/fd/1
+[[ -z DS_ONT_PORT ]] && echo "$(date +"$df") WARN: DS_ONT_PORT is not set!" | tee /proc/1/fd/1
+[[ -z DS_CRC_PASS ]] && echo "$(date +"$df") WARN: DS_CRC_PASS is not set!" | tee /proc/1/fd/1
+[[ -z DS_ONT_PASS ]] && echo "$(date +"$df") WARN: DS_ONT_PASS is not set!" | tee /proc/1/fd/1
+[[ -z DS_PATCOUNT_PASS ]] && echo "$(date +"$df") WARN: DS_PATCOUNT_PASS is not set!" | tee /proc/1/fd/1
 
 echo "$(date +"$df") Starting translation process. This can take some time depending on the size of your RDF metadata..."
 java -Dlog4j.configurationFile=config/log4j2.xml -cp /usr/local/share/java/\* de.dzl.dwh.metadata.SQLFileWriter -p config/properties.properties >> /proc/1/fd/1
 # translate_return=$?
 # [ "$translate_return" = 0 ] || ( echo "$(date +"$df") ERROR: The translation program returned a non-zero exit code (${translate_return}). Aborting" | tee /proc/1/fd/1 && exit 1 )
 if [ $? -ne 0 ]; then
-    echo "$(date +"$df") ERROR: The translation program returned a non-zero exit code (${translate_return}). Aborting" | tee /proc/1/fd/1
+    echo "$(date +"$df") ERROR: The translation program returned a non-zero exit code. Aborting" | tee /proc/1/fd/1
     exit 1
 fi
 
